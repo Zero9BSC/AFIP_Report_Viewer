@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AFIP Report Viewer</title>
+    <link href="/bootstrap/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" rel="stylesheet">
+    <link href="styles.css" rel="stylesheet">
+</head>
+
+<body>
+    <div class="navbar">
+        <h1>AFIP Report Viewer</h1>
+    </div>
+    <div class="container">
+        <!-- Botón para cargar archivos -->
+        <div class="row mt-3">
+            <div class="col-md-8 mx-auto">
+                <label class="btn btn-primary btn-upload">
+                    <i class="fas fa-upload mr-2"></i> Subir Archivos
+                    <input type="file" id="fileInput" accept=".html" style="display: none;" multiple>
+                </label>
+            </div>
+        </div>
+
+        <div class="file-list mt-3">
+            <!-- Aquí se mostrarán las tarjetas generadas dinámicamente -->
+        </div>
+    </div>
+
+    <div id="fileViewer">
+        <button id="printButton" class="btn btn-success mb-3" onclick="printFile()">
+            <i class="fas fa-print"></i> Imprimir
+        </button>
+        <iframe id="fileFrame"></iframe>
+    </div>
+
+    <footer>
+        <a href="https://github.com/Zero9BSC" target="_blank">
+            <i class="fab fa-github github-icon"></i>
+        </a>
+        <a href="https://github.com/Zero9BSC" target="_blank" class="footer-text">© 2023 AFIP Report Viewer. Powered by
+            Franco Jones.</a>
+    </footer>
+
+    <script src="/bootstrap/bootstrap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/js/all.min.js"></script>
+    <script>
+        var selectedCard = null;
+
+        document.getElementById('fileInput').addEventListener('change', handleFileUpload);
+
+        function handleFileUpload(event) {
+            var files = event.target.files;
+            for (var i = 0; i < files.length; i++) {
+                var file = files[i];
+                var fileReader = new FileReader();
+
+                fileReader.onload = function (e) {
+                    var content = e.target.result;
+                    var fileName = file.name;
+                    if (!fileName.endsWith('.html')) {
+                        fileName += '.html';
+                    }
+
+                    // Crear una nueva tarjeta con el nombre del archivo
+                    var card = createFileCard(fileName.replace('.html', ''));
+                    document.querySelector('.file-list').appendChild(card);
+
+                    // Al hacer clic en la tarjeta, mostrar el contenido
+                    card.addEventListener('click', function () {
+                        showFileContent(fileName, content);
+
+                        // Cambiar el color de fondo de la tarjeta seleccionada
+                        if (selectedCard) {
+                            selectedCard.classList.remove('selected');
+                        }
+                        selectedCard = card;
+                        selectedCard.classList.add('selected');
+                    });
+                };
+
+                fileReader.readAsText(file);
+            }
+        }
+
+        function createFileCard(fileName) {
+            // Crear la tarjeta con borde redondeado y sombreado
+            var card = document.createElement('div');
+            card.classList.add('card', 'border-primary', 'rounded', 'shadow-sm', 'h-100');
+            card.innerHTML = `
+        <div class="card-body p-2 d-flex flex-column justify-content-between">
+          <h5 class="card-title mb-1">${fileName}</h5>
+        </div>
+      `;
+
+            return card;
+        }
+
+        function showFileContent(fileName, content) {
+            // Mostrar el contenido en el iframe
+            var fileFrame = document.getElementById('fileFrame');
+            fileFrame.contentDocument.open();
+            fileFrame.contentDocument.write(content);
+            fileFrame.contentDocument.close();
+
+            // Mostrar el botón de impresión
+            document.getElementById('fileViewer').style.display = 'block';
+        }
+
+        function printFile() {
+            var fileFrame = document.getElementById('fileFrame');
+            fileFrame.contentWindow.print();
+        }
+    </script>
+</body>
+
+</html>
